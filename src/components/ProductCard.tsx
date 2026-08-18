@@ -1,5 +1,7 @@
+import { router } from 'expo-router';
 import {
   Image,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -31,34 +33,59 @@ export function ProductCard({
     (state) => state.decrement,
   );
 
+  const openProductDetail = () => {
+    router.push({
+      pathname: '/product/[id]',
+      params: {
+        id: product.id.toString(),
+      },
+    });
+  };
+
   return (
     <View style={styles.card}>
-      <Image
-        source={{ uri: product.image }}
-        style={styles.image}
-        resizeMode="contain"
-      />
+      <Pressable
+        style={({ pressed }) => [
+          styles.productInfo,
+          pressed && styles.productInfoPressed,
+        ]}
+        onPress={openProductDetail}
+        accessibilityRole="button"
+        accessibilityLabel={`View details for ${product.title}`}
+      >
+        <Image
+          source={{ uri: product.image }}
+          style={styles.image}
+          resizeMode="contain"
+        />
 
-      <View style={styles.content}>
-        <Text style={styles.category}>
-          {product.category}
-        </Text>
+        <View style={styles.content}>
+          <Text style={styles.category}>
+            {product.category}
+          </Text>
 
-        <Text
-          style={styles.title}
-          numberOfLines={2}
-        >
-          {product.title}
-        </Text>
+          <Text
+            style={styles.title}
+            numberOfLines={2}
+          >
+            {product.title}
+          </Text>
 
-        <Text style={styles.price}>
-          ${product.price.toFixed(2)}
-        </Text>
+          <Text style={styles.price}>
+            ${product.price.toFixed(2)}
+          </Text>
 
-        <Text style={styles.rating}>
-          ★ {product.rating.rate.toFixed(1)} ({product.rating.count})
-        </Text>
+          <Text style={styles.rating}>
+            ★ {product.rating.rate.toFixed(1)} ({product.rating.count})
+          </Text>
 
+          <Text style={styles.detailsText}>
+            View details
+          </Text>
+        </View>
+      </Pressable>
+
+      <View style={styles.quantityContainer}>
         <QuantityControl
           quantity={quantity}
           onIncrement={() => increment(product)}
@@ -71,12 +98,17 @@ export function ProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
     borderColor: '#e5e7eb',
+  },
+  productInfo: {
+    flexDirection: 'row',
+  },
+  productInfoPressed: {
+    opacity: 0.7,
   },
   image: {
     width: 100,
@@ -108,5 +140,14 @@ const styles = StyleSheet.create({
   rating: {
     color: '#6b7280',
     fontSize: 14,
+  },
+  detailsText: {
+    marginTop: 8,
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  quantityContainer: {
+    alignItems: 'flex-end',
   },
 });
