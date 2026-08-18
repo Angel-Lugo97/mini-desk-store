@@ -34,6 +34,22 @@ export default function RootLayout() {
             title: 'Shopping Cart',
           }}
         />
+
+        <Stack.Screen
+          name="checkout"
+          options={{
+            title: 'Checkout',
+          }}
+        />
+
+        <Stack.Screen
+          name="success"
+          options={{
+            title: 'Order Complete',
+            headerBackVisible: false,
+            gestureEnabled: false,
+          }}
+        />
       </Stack>
     </QueryClientProvider>
   );

@@ -165,9 +165,19 @@ export default function CartScreen() {
               </Text>
             </View>
 
-            <Text style={styles.checkoutHint}>
-              Checkout will be added in the next step.
-            </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.checkoutButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => router.push('/checkout')}
+              accessibilityRole="button"
+              accessibilityLabel="Proceed to checkout"
+            >
+              <Text style={styles.checkoutButtonText}>
+                Proceed to Checkout
+              </Text>
+            </Pressable>
           </View>
         }
       />
@@ -270,11 +280,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
   },
-  checkoutHint: {
-    marginTop: 12,
-    color: '#6b7280',
-    fontSize: 13,
-    textAlign: 'center',
+  checkoutButton: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  checkoutButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
   },
   emptyContainer: {
     flex: 1,
