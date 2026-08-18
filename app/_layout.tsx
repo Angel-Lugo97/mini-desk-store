@@ -27,6 +27,13 @@ export default function RootLayout() {
             headerRight: () => <CartIndicator />,
           }}
         />
+
+        <Stack.Screen
+          name="cart"
+          options={{
+            title: 'Shopping Cart',
+          }}
+        />
       </Stack>
     </QueryClientProvider>
   );

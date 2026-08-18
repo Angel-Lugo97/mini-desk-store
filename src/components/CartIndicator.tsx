@@ -1,4 +1,6 @@
+import { router } from 'expo-router';
 import {
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -15,7 +17,15 @@ export function CartIndicator() {
   );
 
   return (
-    <View style={styles.container}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.container,
+        pressed && styles.pressed,
+      ]}
+      onPress={() => router.navigate('/cart')}
+      accessibilityRole="button"
+      accessibilityLabel={`Open cart with ${totalItems} items`}
+    >
       <Text style={styles.label}>
         Cart
       </Text>
@@ -25,7 +35,7 @@ export function CartIndicator() {
           {totalItems}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -33,6 +43,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  pressed: {
+    opacity: 0.7,
   },
   label: {
     color: '#111827',
