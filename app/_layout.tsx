@@ -1,22 +1,25 @@
 import {
-    QueryClient,
-    QueryClientProvider,
+  QueryClient,
+  QueryClientProvider,
 } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+
+import { CartIndicator } from '../src/components/CartIndicator';
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-    return (
-        <QueryClientProvider client={queryClient}>
-            <Stack>
-                <Stack.Screen
-                    name="index"
-                    options={{
-                        title: 'Mini Desk Store',
-                    }}
-                />
-            </Stack>
-        </QueryClientProvider>
-    );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Stack>
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'Mini Desk Store',
+            headerRight: () => <CartIndicator />,
+          }}
+        />
+      </Stack>
+    </QueryClientProvider>
+  );
 }
