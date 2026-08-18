@@ -5,14 +5,18 @@ import type { Product } from '../types/product';
 
 interface CartState {
   items: CartItem[];
+  checkoutCompleted: boolean;
   increment: (product: Product) => void;
   decrement: (productId: number) => void;
   remove: (productId: number) => void;
   clearCart: () => void;
+  markCheckoutCompleted: () => void;
+  resetCheckout: () => void;
 }
 
 export const useCartStore = create<CartState>((set) => ({
   items: [],
+  checkoutCompleted: false,
 
   increment: (product) =>
     set((state) => {
@@ -30,6 +34,7 @@ export const useCartStore = create<CartState>((set) => ({
                 }
               : item,
           ),
+          checkoutCompleted: false,
         };
       }
 
@@ -41,6 +46,7 @@ export const useCartStore = create<CartState>((set) => ({
             quantity: 1,
           },
         ],
+        checkoutCompleted: false,
       };
     }),
 
@@ -68,5 +74,15 @@ export const useCartStore = create<CartState>((set) => ({
   clearCart: () =>
     set({
       items: [],
+    }),
+
+  markCheckoutCompleted: () =>
+    set({
+      checkoutCompleted: true,
+    }),
+
+  resetCheckout: () =>
+    set({
+      checkoutCompleted: false,
     }),
 }));

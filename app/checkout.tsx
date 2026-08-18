@@ -18,6 +18,10 @@ export default function CheckoutScreen() {
     (state) => state.clearCart,
   );
 
+  const markCheckoutCompleted = useCartStore(
+    (state) => state.markCheckoutCompleted,
+  );
+
   const totalItems = items.reduce(
     (sum, item) => sum + item.quantity,
     0,
@@ -35,6 +39,7 @@ export default function CheckoutScreen() {
     }
 
     clearCart();
+    markCheckoutCompleted();
 
     router.replace('/success');
   };

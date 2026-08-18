@@ -1,4 +1,7 @@
-import { router } from 'expo-router';
+import {
+  Redirect,
+  router,
+} from 'expo-router';
 import {
   Pressable,
   StyleSheet,
@@ -6,7 +9,26 @@ import {
   View,
 } from 'react-native';
 
+import { useCartStore } from '../src/store/cartStore';
+
 export default function SuccessScreen() {
+  const checkoutCompleted = useCartStore(
+    (state) => state.checkoutCompleted,
+  );
+
+  const resetCheckout = useCartStore(
+    (state) => state.resetCheckout,
+  );
+
+  if (!checkoutCompleted) {
+    return <Redirect href="/" />;
+  }
+
+  const handleContinueShopping = () => {
+    resetCheckout();
+    router.dismissTo('/');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
@@ -32,7 +54,7 @@ export default function SuccessScreen() {
           styles.button,
           pressed && styles.buttonPressed,
         ]}
-        onPress={() => router.dismissTo('/')}
+        onPress={handleContinueShopping}
         accessibilityRole="button"
         accessibilityLabel="Continue shopping"
       >

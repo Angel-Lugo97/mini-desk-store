@@ -11,6 +11,7 @@ import {
 
 import { QuantityControl } from '../../src/components/QuantityControl';
 import { useProduct } from '../../src/hooks/useProduct';
+import { ApiError } from '../../src/services/productsApi';
 import { useCartStore } from '../../src/store/cartStore';
 
 export default function ProductDetailScreen() {
@@ -79,16 +80,24 @@ export default function ProductDetailScreen() {
   }
 
   if (isError) {
+    const productNotFound =
+      error instanceof ApiError &&
+      error.status === 404;
+
     return (
       <View style={styles.centeredContainer}>
         <Text style={styles.errorTitle}>
-          Unable to load product
+          {productNotFound
+            ? 'Product not found'
+            : 'Unable to load product'}
         </Text>
 
         <Text style={styles.errorMessage}>
-          {error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred.'}
+          {productNotFound
+            ? 'The requested product does not exist.'
+            : error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred.'}
         </Text>
 
         <Pressable
