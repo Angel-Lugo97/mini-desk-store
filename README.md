@@ -1417,6 +1417,14 @@ El carrito tampoco se persiste al cerrar completamente la aplicación.
 
 ---
 
+# Video Demostrativo
+
+El funcionamiento completo de **Mini Desk Store** puede consultarse en el siguiente enlace:
+
+[Ver video demostrativo en Google Drive](https://drive.google.com/drive/folders/1fj97Dp-AfLGGjX05jCTbX8QwWKuu28j2?usp=sharing)
+
+---
+
 # Evidencia Visual de Ejecución
 
 Las siguientes capturas muestran Mini Desk Store ejecutándose en un dispositivo físico mediante **Expo Go**.
