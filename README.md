@@ -4,7 +4,7 @@
 
 La aplicación consume productos desde **Fake Store API** y permite recorrer un flujo completo de compra simulado: desde una pantalla de bienvenida y catálogo de productos hasta el detalle individual, carrito, checkout y confirmación de compra.
 
-El proyecto fue desarrollado con una arquitectura deliberadamente sencilla, priorizando código legible, separación clara de responsabilidades y decisiones técnicas fáciles de justificar y mantener.
+El proyecto mantiene una arquitectura intencionalmente sencilla, priorizando código legible, responsabilidades claras y decisiones técnicas proporcionales al alcance de la aplicación.
 
 ---
 
@@ -27,11 +27,13 @@ El proyecto fue desarrollado con una arquitectura deliberadamente sencilla, prio
 
 ---
 
-## Descripción General
+# Descripción General
 
 Mini Desk Store simula una pequeña tienda móvil.
 
-El usuario inicia en una pantalla de bienvenida y puede acceder al catálogo de productos. Los productos son obtenidos desde Fake Store API y se muestran considerando los diferentes estados de una petición remota:
+El usuario inicia en una pantalla de bienvenida desde la cual puede ingresar al catálogo de productos.
+
+Los productos son obtenidos desde Fake Store API y el catálogo contempla explícitamente los diferentes estados de una petición remota:
 
 ```text
 Loading
@@ -41,9 +43,9 @@ Success
 
 Desde el catálogo es posible abrir cualquier producto y navegar a una pantalla de detalle utilizando una ruta dinámica basada en su identificador.
 
-La aplicación también cuenta con un carrito global sincronizado entre las diferentes pantallas, controles para aumentar o disminuir cantidades y un flujo de checkout simulado.
+La aplicación también cuenta con un carrito global sincronizado entre las diferentes pantallas, controles para aumentar o disminuir cantidades, cálculo de subtotales y total general, además de un flujo de checkout completamente simulado.
 
-Flujo principal:
+El flujo principal es:
 
 ```text
 Welcome
@@ -61,9 +63,9 @@ Success
 
 ---
 
-## Funcionalidades Implementadas
+# Funcionalidades Implementadas
 
-### Pantalla de bienvenida
+## Pantalla de Bienvenida
 
 La ruta inicial de la aplicación muestra una pantalla de bienvenida con una acción para ingresar al catálogo.
 
@@ -77,11 +79,11 @@ Go to Catalog
 /catalog
 ```
 
-La navegación hacia el catálogo utiliza Expo Router.
+La navegación se realiza mediante Expo Router.
 
 ---
 
-### Catálogo de productos
+## Catálogo de Productos
 
 La aplicación obtiene los productos desde:
 
@@ -89,28 +91,30 @@ La aplicación obtiene los productos desde:
 https://fakestoreapi.com/products
 ```
 
-El catálogo muestra información como:
+Cada producto muestra:
 
 ```text
 - Imagen.
 - Categoría.
-- Nombre del producto.
+- Nombre.
 - Precio.
 - Rating.
 - Controles de cantidad.
 ```
 
-Para representar el listado se utiliza `FlatList`, evitando renderizar todos los elementos de manera innecesaria.
+Para representar el listado se utiliza `FlatList`.
+
+Esto permite mantener una implementación adecuada para listas móviles sin renderizar innecesariamente todos los elementos al mismo tiempo.
 
 ---
 
-### Estados de carga, error y éxito
+# Estados de Carga, Error y Éxito
 
-La consulta del catálogo maneja explícitamente los tres estados principales de una petición remota.
+La consulta del catálogo maneja explícitamente los principales estados de una petición remota.
 
-#### Loading
+## Loading
 
-Mientras se espera la respuesta de Fake Store API se muestra:
+Mientras Fake Store API responde, la aplicación muestra:
 
 ```text
 Loading products...
@@ -118,49 +122,59 @@ Loading products...
 
 junto con un `ActivityIndicator`.
 
-#### Error
+---
 
-Si ocurre un problema durante la petición se muestra una pantalla de error con la posibilidad de volver a intentar la consulta.
+## Error
+
+Si ocurre un problema durante la consulta, se muestra:
 
 ```text
 Unable to load products
-↓
+```
+
+junto con el mensaje correspondiente y una acción:
+
+```text
 Try again
 ```
 
-#### Success
-
-Cuando la petición termina correctamente, los productos recibidos son mostrados mediante `FlatList`.
+que permite ejecutar nuevamente la consulta.
 
 ---
 
-## Detalle de Producto
+## Success
 
-Cada producto puede abrirse desde el catálogo.
+Cuando la petición termina correctamente, la aplicación muestra el catálogo utilizando los datos recibidos desde Fake Store API.
 
-La navegación utiliza una ruta dinámica:
+---
+
+# Detalle de Producto
+
+Al tocar un producto desde el catálogo se navega hacia su detalle.
+
+La aplicación utiliza una ruta dinámica:
 
 ```text
 /product/[id]
 ```
 
-Ejemplo:
+Ejemplos:
 
 ```text
 /product/1
-/product/5
+/product/7
 /product/20
 ```
 
-El identificador se obtiene mediante Expo Router:
+El identificador se obtiene mediante:
 
 ```ts
 useLocalSearchParams()
 ```
 
-Posteriormente se convierte y valida antes de realizar la consulta correspondiente.
+Posteriormente se convierte a número y se valida antes de realizar la consulta.
 
-Flujo:
+El flujo es:
 
 ```text
 /product/1
@@ -178,35 +192,35 @@ Fake Store API
 
 ---
 
-## Acceso Directo al Detalle
+# Acceso Directo al Detalle
 
-Una decisión importante es que la pantalla de detalle **no depende del objeto recibido desde el catálogo**.
+La pantalla de detalle **no depende de que el catálogo le envíe el objeto completo del producto**.
 
-El catálogo únicamente navega utilizando el identificador del producto.
+El catálogo únicamente navega utilizando el identificador.
 
-La pantalla de detalle vuelve a consultar el producto utilizando:
+Después, la pantalla de detalle realiza su propia consulta mediante:
 
 ```text
 GET /products/:id
 ```
 
-Esto significa que una ruta como:
+Por ejemplo:
 
 ```text
 /product/7
 ```
 
-puede resolver correctamente el producto aunque sea abierta directamente, sin haber visitado previamente el catálogo.
+puede resolver el producto correspondiente sin necesidad de haber visitado previamente el catálogo.
 
-Esta decisión evita acoplar la pantalla de detalle al estado de navegación anterior.
+Esto evita acoplar la pantalla de detalle al estado anterior de navegación.
 
 ---
 
-## Carrito Global
+# Carrito Global
 
 El carrito utiliza **Zustand** como estado global de cliente.
 
-La información principal almacenada es:
+La estructura principal de cada elemento es:
 
 ```ts
 CartItem {
@@ -224,7 +238,7 @@ remove(productId)
 clearCart()
 ```
 
-El mismo estado es utilizado desde:
+El mismo store es utilizado desde:
 
 ```text
 Catalog
@@ -236,9 +250,9 @@ Cart
 Checkout
 ```
 
-Esto permite mantener las cantidades sincronizadas entre todas las pantallas.
+Esto permite mantener las cantidades sincronizadas.
 
-Por ejemplo:
+Ejemplo:
 
 ```text
 Catalog quantity = 2
@@ -256,7 +270,7 @@ Catalog quantity = 3
 
 ---
 
-## Control de Cantidades
+# Controles de Cantidad
 
 Cada producto utiliza un control reutilizable:
 
@@ -276,28 +290,28 @@ Las reglas principales son:
 
 ---
 
-## Indicador Global del Carrito
+# Indicador Global del Carrito
 
-El encabezado muestra un indicador con la cantidad total de unidades agregadas al carrito.
+La aplicación muestra un indicador con el número total de unidades agregadas al carrito.
 
-Por ejemplo:
+Ejemplo:
 
 ```text
 Producto A = 2
 Producto B = 3
 
-Total mostrado = 5
+Indicador = 5
 ```
 
-El número total no se almacena como estado independiente.
+Este valor no se almacena como estado adicional.
 
-Se calcula a partir del contenido actual del carrito utilizando `reduce`.
+Se calcula directamente desde los elementos actuales del carrito utilizando `reduce`.
 
 ---
 
-## Shopping Cart
+# Shopping Cart
 
-La pantalla de carrito muestra por producto:
+La pantalla del carrito muestra por producto:
 
 ```text
 - Nombre.
@@ -314,7 +328,7 @@ El subtotal se calcula como:
 subtotal = price * quantity
 ```
 
-El total general se obtiene a partir de todos los productos:
+El total general se obtiene mediante:
 
 ```ts
 items.reduce(
@@ -324,7 +338,7 @@ items.reduce(
 )
 ```
 
-Cuando el carrito está vacío se muestra:
+Cuando no existen productos se muestra:
 
 ```text
 Your cart is empty
@@ -334,13 +348,13 @@ junto con una acción para regresar al catálogo.
 
 ---
 
-## Checkout
+# Checkout
 
-El proyecto incluye un flujo de checkout simulado.
+El proyecto incluye un checkout simulado.
 
-No se procesa ningún pago real.
+No existe ninguna integración con un sistema de pago real.
 
-Flujo:
+El flujo es:
 
 ```text
 Cart
@@ -361,24 +375,30 @@ La pantalla muestra:
 - Cantidades.
 - Precio unitario.
 - Subtotales.
-- Cantidad total de items.
-- Total de la compra.
+- Número total de items.
+- Total general.
 - Aviso de pago simulado.
 ```
 
-Si el carrito está vacío, el checkout queda bloqueado.
+Si el carrito está vacío:
 
 ```text
 items.length === 0
-↓
+```
+
+la aplicación muestra:
+
+```text
 Checkout unavailable
 ```
 
+y no permite confirmar el pago.
+
 ---
 
-## Confirmación de Compra
+# Confirmación de Compra
 
-Al confirmar el pago:
+Al confirmar el checkout:
 
 ```text
 Confirm Payment
@@ -390,11 +410,11 @@ markCheckoutCompleted()
 router.replace('/success')
 ```
 
-El carrito es limpiado y la navegación utiliza `replace` para evitar mantener el checkout procesado como pantalla inmediatamente anterior.
+El carrito se limpia y la navegación utiliza `replace` para evitar que el checkout ya procesado permanezca como pantalla inmediatamente anterior.
 
 ---
 
-## Protección de Success
+# Protección de la Pantalla Success
 
 La aplicación mantiene un estado:
 
@@ -402,7 +422,7 @@ La aplicación mantiene un estado:
 checkoutCompleted
 ```
 
-La pantalla de éxito solo puede mostrarse cuando realmente se completó el checkout.
+La pantalla de éxito verifica ese valor antes de mostrar una operación completada.
 
 Si alguien intenta acceder directamente a:
 
@@ -410,68 +430,70 @@ Si alguien intenta acceder directamente a:
 /success
 ```
 
-sin haber completado una compra, la aplicación redirige al usuario.
+sin haber completado un checkout válido, la aplicación redirige al usuario hacia el flujo permitido.
 
-Esto evita mostrar:
+Esto evita mostrar información incorrecta como:
 
 ```text
 Payment completed
 ```
 
-cuando ningún checkout ocurrió realmente.
+si realmente no ocurrió ningún checkout.
 
 ---
 
 # Tecnologías Utilizadas
 
-| Tecnología         | Uso dentro del proyecto                      |
-| :----------------- | :------------------------------------------- |
-| **React Native**   | Desarrollo de la aplicación móvil            |
-| **Expo SDK 54**    | Entorno y herramientas de desarrollo         |
-| **TypeScript**     | Tipado estático                              |
-| **Expo Router**    | Navegación y rutas dinámicas                 |
-| **TanStack Query** | Consultas HTTP, caché y estados del servidor |
-| **Zustand**        | Estado global del carrito                    |
-| **Fake Store API** | Fuente remota de productos                   |
-| **Fetch API**      | Peticiones HTTP                              |
-| **Git**            | Control de versiones                         |
-| **GitHub**         | Repositorio remoto                           |
-| **Expo Go**        | Ejecución y pruebas en dispositivo físico    |
+| Tecnología         | Uso dentro del proyecto              |
+| :----------------- | :----------------------------------- |
+| **React Native**   | Desarrollo de la aplicación móvil    |
+| **Expo SDK 54**    | Entorno de desarrollo                |
+| **TypeScript**     | Tipado estático                      |
+| **Expo Router**    | Navegación y rutas dinámicas         |
+| **TanStack Query** | Server state, caché y consultas HTTP |
+| **Zustand**        | Estado global del carrito            |
+| **Fake Store API** | Fuente remota de productos           |
+| **Fetch API**      | Comunicación HTTP                    |
+| **Git**            | Control de versiones                 |
+| **GitHub**         | Repositorio remoto                   |
+| **Expo Go**        | Pruebas en dispositivo físico        |
 
 ---
 
 # Versiones Utilizadas
 
-El proyecto fue desarrollado y probado utilizando:
+El proyecto fue desarrollado utilizando:
 
 ```text
 Node.js: v24.19.0
 Expo SDK: 54
 ```
 
-Node fue gestionado durante el desarrollo mediante NVM.
+Node fue gestionado localmente mediante NVM.
 
-Estas son las versiones utilizadas durante la implementación, no rutas locales requeridas por el proyecto.
+Estas versiones representan el entorno utilizado durante el desarrollo.
 
-El repositorio no depende de una instalación específica de IntelliJ ni contiene rutas absolutas hacia la computadora donde fue desarrollado.
+El proyecto no depende de una ruta específica de Node ni de la máquina donde fue creado.
 
 ---
 
 # Requisitos para Ejecutar el Proyecto
 
-Para trabajar con el proyecto se necesita:
+Se requiere:
 
 ```text
 - Git
 - Node.js
 - npm
 - Expo
-- Expo Go en caso de utilizar un dispositivo físico
+- Expo Go para ejecución en dispositivo físico
 ```
 
 No es obligatorio utilizar IntelliJ IDEA.
 
-El proyecto puede abrirse utilizando cualquier editor o IDE compatible con proyectos Node.js / React Native, por ejemplo:
+El proyecto puede abrirse desde cualquier IDE compatible con proyectos React Native / Node.js.
+
+Ejemplos:
 
 ```text
 - IntelliJ IDEA
@@ -496,7 +518,7 @@ Entrar al proyecto:
 cd mini-desk-store
 ```
 
-Instalar exactamente las dependencias registradas en `package-lock.json`:
+Instalar las dependencias registradas en `package-lock.json`:
 
 ```bash
 npm ci
@@ -508,13 +530,13 @@ También puede utilizarse:
 npm install
 ```
 
-aunque `npm ci` es recomendable para obtener una instalación más reproducible a partir del lockfile.
+aunque `npm ci` ofrece una instalación más reproducible basada directamente en el lockfile.
 
 ---
 
 # Ejecutar el Proyecto
 
-Durante el desarrollo, el proyecto se ejecutó principalmente mediante túnel porque el dispositivo físico podía tener problemas de conexión directa mediante LAN.
+Durante el desarrollo, el proyecto fue ejecutado principalmente mediante túnel para facilitar la conexión con un iPhone físico utilizando Expo Go.
 
 Ejecutar:
 
@@ -522,13 +544,13 @@ Ejecutar:
 npm run start:tunnel
 ```
 
-El script corresponde a:
+El script ejecuta:
 
 ```bash
 expo start --tunnel
 ```
 
-También puede ejecutarse directamente con:
+También puede utilizarse directamente:
 
 ```bash
 npx expo start --tunnel
@@ -537,23 +559,23 @@ npx expo start --tunnel
 Una vez iniciado Metro:
 
 ```text
-1. Abrir Expo Go en el dispositivo.
-2. Utilizar el QR generado por Expo.
-3. Esperar a que Metro compile la aplicación.
-4. Probar el flujo desde la pantalla de bienvenida.
+1. Abrir Expo Go.
+2. Escanear o abrir el proyecto mediante el QR generado.
+3. Esperar la compilación de Metro.
+4. Probar la aplicación.
 ```
 
 ---
 
-## Limpiar Caché y Regenerar Rutas
+# Limpiar Caché de Expo
 
-Si Expo Router todavía no reconoce una nueva ruta o Metro mantiene caché anterior:
+Si Metro mantiene información anterior o Expo Router todavía no reconoce una nueva ruta:
 
 ```bash
 npx expo start --clear --tunnel
 ```
 
-Este comando también resulta útil después de crear nuevas rutas dinámicas o archivos dentro de `app/`.
+Esto resulta especialmente útil después de agregar rutas nuevas.
 
 ---
 
@@ -571,7 +593,7 @@ Lint:
 npm run lint
 ```
 
-Validación de diferencias Git:
+Comprobación de diferencias:
 
 ```bash
 git diff --check
@@ -586,8 +608,6 @@ npx expo-doctor
 ---
 
 # Estructura del Proyecto
-
-La estructura principal es:
 
 ```text
 mini-desk-store/
@@ -626,6 +646,16 @@ mini-desk-store/
 │   └── utils/
 │       └── queryRetry.ts
 │
+├── docs/
+│   └── screenshots/
+│       ├── welcome.jpeg
+│       ├── catalog.jpeg
+│       ├── catalog-quantities.jpeg
+│       ├── cart.jpeg
+│       ├── checkout.jpeg
+│       ├── success.jpeg
+│       └── intellij-run.png
+│
 ├── package.json
 ├── package-lock.json
 ├── tsconfig.json
@@ -636,15 +666,15 @@ mini-desk-store/
 
 # ¿Por Qué Esta Organización?
 
-La arquitectura se mantuvo intencionalmente sencilla.
+La arquitectura fue mantenida intencionalmente sencilla.
 
-El objetivo no fue crear la mayor cantidad posible de capas, sino separar únicamente responsabilidades que realmente existen dentro de la aplicación.
+No se buscó agregar la mayor cantidad posible de capas, sino separar responsabilidades reales dentro de la aplicación.
 
 ---
 
 ## `app/`
 
-Contiene las pantallas y rutas manejadas por Expo Router.
+Contiene las pantallas y rutas de Expo Router.
 
 ```text
 app/index.tsx
@@ -666,15 +696,11 @@ app/success.tsx
 → /success
 ```
 
-El nombre y posición de los archivos determinan las rutas de la aplicación.
-
 ---
 
 ## `src/components/`
 
 Contiene componentes visuales reutilizables.
-
-Ejemplos:
 
 ```text
 ProductCard
@@ -682,20 +708,20 @@ QuantityControl
 CartIndicator
 ```
 
-Esto evita repetir la misma interfaz o comportamiento en distintas pantallas.
+Esto evita repetir comportamiento o interfaz.
 
 ---
 
 ## `src/hooks/`
 
-Contiene los hooks encargados de conectar las pantallas con los datos remotos.
+Contiene hooks encargados de conectar la interfaz con los datos remotos.
 
 ```text
 useProducts
 useProduct
 ```
 
-Estos hooks encapsulan TanStack Query y evitan que las pantallas tengan que conocer todos los detalles de la consulta.
+Estos hooks encapsulan la integración con TanStack Query.
 
 ---
 
@@ -707,9 +733,7 @@ Contiene la comunicación HTTP.
 productsApi.ts
 ```
 
-Aquí se encuentran las funciones que utilizan `fetch` para comunicarse con Fake Store API.
-
-Ejemplo conceptual:
+El flujo conceptual es:
 
 ```text
 ProductsScreen
@@ -731,53 +755,68 @@ Contiene el estado global del cliente.
 cartStore.ts
 ```
 
-Zustand mantiene el carrito y las acciones necesarias para modificarlo.
+Aquí Zustand mantiene:
+
+```text
+- Productos del carrito.
+- Cantidades.
+- Acciones.
+- Estado del checkout.
+```
 
 ---
 
 ## `src/types/`
 
-Contiene los tipos de TypeScript compartidos.
+Contiene tipos TypeScript compartidos.
 
 ```text
 Product
 ProductRating
 CartItem
 ```
-
-Mantener los tipos separados permite reutilizarlos sin duplicar definiciones.
 
 ---
 
 ## `src/utils/`
 
-Contiene pequeñas funciones auxiliares reutilizables.
+Contiene pequeñas funciones auxiliares.
 
-Por ejemplo:
+Actualmente:
 
 ```text
 queryRetry.ts
 ```
 
-controla cuándo TanStack Query debe volver a intentar una petición.
+controla la política de reintentos de TanStack Query.
+
+---
+
+## `docs/screenshots/`
+
+Contiene únicamente evidencia visual utilizada por la documentación.
+
+Estas imágenes no forman parte de los assets de la aplicación.
+
+Separarlas en `docs/` evita mezclar recursos de ejecución con archivos destinados únicamente al README.
 
 ---
 
 # Decisiones Técnicas
 
-## 1. ¿Por qué React Native con Expo?
+## 1. ¿Por qué React Native y Expo?
 
 React Native permite desarrollar una aplicación móvil utilizando React y TypeScript.
 
-Expo simplifica la configuración del proyecto, la ejecución en dispositivos físicos y la integración con herramientas como Expo Router.
+Expo reduce la configuración nativa necesaria y facilita la ejecución en dispositivos físicos mediante Expo Go.
 
-Para el alcance de esta prueba técnica, Expo evita configuración nativa innecesaria y permite concentrar el esfuerzo en la funcionalidad solicitada.
+Para el tamaño de esta prueba técnica resulta suficiente y permite concentrarse en la funcionalidad solicitada.
 
 ---
 
 ## 2. ¿Por qué TypeScript?
 
-TypeScript ayuda a detectar problemas durante el desarrollo y define contratos claros para estructuras como:
+TypeScript define contratos claros para estructuras como:
 
 ```text
 Product
@@ -785,15 +824,13 @@ ProductRating
 CartItem
 ```
 
-Esto reduce errores relacionados con propiedades inexistentes o tipos incorrectos.
+Esto permite detectar problemas antes de ejecutar la aplicación.
 
-Una limitación importante es que TypeScript solo valida tipos durante desarrollo y compilación.
+TypeScript no valida automáticamente el JSON recibido desde Fake Store API en runtime.
 
-No valida automáticamente el JSON recibido desde Fake Store API en runtime.
+Para esta prueba se confía en el contrato proporcionado por la API.
 
-Para esta prueba se decidió confiar en el contrato de la API.
-
-En una aplicación de producción podría añadirse validación mediante herramientas como:
+En un entorno de producción podría añadirse:
 
 ```text
 Zod
@@ -806,9 +843,9 @@ o validación manual.
 
 ## 3. ¿Por qué Expo Router?
 
-Se eligió Expo Router por su integración natural con Expo y su modelo de navegación basado en archivos.
+Expo Router proporciona navegación basada en archivos.
 
-Las rutas se pueden entender directamente desde la estructura del proyecto:
+Ejemplo:
 
 ```text
 app/catalog.tsx
@@ -818,15 +855,15 @@ app/product/[id].tsx
 → /product/:id
 ```
 
-Esto simplifica especialmente la implementación de rutas dinámicas.
+Esto facilita especialmente la implementación y comprensión de rutas dinámicas.
 
 ---
 
-## 4. ¿Por qué el detalle consulta el producto nuevamente por ID?
+## 4. ¿Por qué el detalle consulta nuevamente por ID?
 
-La pantalla de detalle no recibe el objeto completo desde el catálogo.
+La pantalla de detalle no necesita recibir el objeto completo desde el catálogo.
 
-Únicamente utiliza el identificador presente en la URL.
+Únicamente obtiene el identificador desde la URL.
 
 ```text
 /product/10
@@ -836,17 +873,15 @@ id = 10
 GET /products/10
 ```
 
-Esto permite abrir una ruta directamente y obtener el producto correcto sin depender de haber visitado anteriormente el listado.
-
-Además, reduce el acoplamiento entre el catálogo y el detalle.
+Esto permite abrir directamente una ruta dinámica y reduce el acoplamiento entre pantallas.
 
 ---
 
 ## 5. ¿Por qué TanStack Query?
 
-Los productos representan **server state**.
+Los productos son información proveniente de un servidor externo.
 
-Son datos provenientes de un servidor remoto y tienen necesidades diferentes al estado local de la interfaz.
+Por ello representan **server state**.
 
 TanStack Query permite manejar:
 
@@ -860,67 +895,61 @@ TanStack Query permite manejar:
 - Refetch.
 ```
 
-sin crear manualmente múltiples estados con `useState`.
+sin recrear manualmente toda esta lógica.
 
 ---
 
-## 6. ¿Cómo funciona el caché?
+## 6. ¿Cómo se maneja el caché?
 
-El catálogo utiliza una clave de consulta similar a:
+El catálogo utiliza una clave:
 
 ```ts
 ['products']
 ```
 
-y los detalles utilizan:
+Los detalles utilizan:
 
 ```ts
 ['product', productId]
 ```
 
-Los datos permanecen frescos durante:
+Los datos tienen un `staleTime` de:
 
 ```text
 5 minutos
 ```
 
-mediante `staleTime`.
-
-Durante ese periodo, TanStack Query puede reutilizar información disponible en caché según las condiciones de la consulta.
+Durante ese periodo TanStack Query puede reutilizar datos disponibles según el estado de la consulta.
 
 ---
 
-## 7. ¿Cómo se manejan los retries?
+## 7. ¿Cómo funcionan los reintentos?
 
-El proyecto no utiliza un número fijo de reintentos para cualquier tipo de error.
-
-Se implementó una estrategia mediante:
+El proyecto utiliza:
 
 ```text
 shouldRetryQuery
 ```
 
-La regla general es:
+con una regla general:
 
 ```text
-Errores HTTP 4xx
+HTTP 4xx
 → no retry
 
 Errores de red o HTTP 5xx
 → hasta 2 retries
 ```
 
-Un error como `404` normalmente indica que repetir inmediatamente la misma petición no resolverá el problema.
+Un error como 404 normalmente no se solucionará repitiendo inmediatamente la misma petición.
 
-En cambio, un error de red o servidor puede ser temporal.
+Un error temporal de red o servidor sí puede recuperarse.
 
 ---
 
 ## 8. ¿Por qué Zustand?
 
-El carrito representa **client state**.
-
-Debe ser compartido entre varias pantallas:
+El carrito representa estado de cliente compartido entre:
 
 ```text
 Catalog
@@ -929,76 +958,65 @@ Cart
 Checkout
 ```
 
-Zustand permite crear un store global pequeño sin introducir una cantidad elevada de configuración adicional.
-
-Para el tamaño actual de la aplicación resulta suficiente.
+Zustand permite crear un store global pequeño y sencillo sin introducir configuración innecesaria.
 
 ---
 
-## 9. ¿Por qué no Redux?
+## 9. ¿Por Qué No Redux?
 
-Redux es una herramienta válida, especialmente para aplicaciones grandes y flujos de estado complejos.
+Redux es una solución válida para aplicaciones con estados globales complejos.
 
-Sin embargo, el estado global de Mini Desk Store es reducido.
+En Mini Desk Store el estado global es reducido.
 
-Principalmente se necesita almacenar:
+Principalmente se necesita:
 
 ```text
 items
 checkoutCompleted
 ```
 
-y unas pocas acciones.
+junto con algunas acciones.
 
-Utilizar Redux habría añadido más configuración y conceptos sin aportar una ventaja proporcional para este alcance.
-
-Por ese motivo se eligió Zustand.
+Agregar Redux aumentaría la configuración sin aportar una ventaja proporcional al tamaño actual del proyecto.
 
 ---
 
-## 10. ¿Por qué separar server state y client state?
+## 10. Server State vs Client State
 
-El proyecto diferencia dos tipos de información.
+El proyecto diferencia claramente ambos tipos de estado.
 
 ### Server State
 
 ```text
-Productos provenientes de Fake Store API
-→ TanStack Query
+Productos
+↓
+TanStack Query
 ```
 
 ### Client State
 
 ```text
-Carrito y estado del checkout
-→ Zustand
+Carrito
+Checkout
+↓
+Zustand
 ```
 
-Los productos pertenecen al servidor y necesitan caché, refetch y manejo de errores HTTP.
+Los productos requieren caché, refetch y manejo de errores HTTP.
 
-El carrito pertenece a la sesión actual del usuario y necesita estar sincronizado entre pantallas.
-
-Mantener ambas responsabilidades separadas evita utilizar una sola herramienta para problemas diferentes.
+El carrito necesita sincronización entre pantallas.
 
 ---
 
-## 11. ¿Por qué usar `fetch` en lugar de Axios?
+## 11. ¿Por Qué Fetch en Lugar de Axios?
 
-La aplicación consume una API pequeña y únicamente necesita realizar peticiones HTTP sencillas.
+La aplicación consume una API pequeña y únicamente necesita peticiones HTTP sencillas.
 
-`fetch` ya está disponible en el entorno y es suficiente para este caso.
-
-La comunicación HTTP permanece encapsulada dentro de:
-
-```text
-src/services/productsApi.ts
-```
-
-Por ello sería posible cambiar la implementación en el futuro sin afectar directamente a las pantallas.
+`fetch` es suficiente para este escenario y evita agregar una dependencia adicional.
 
 ---
 
-## 12. ¿Por qué crear una capa HTTP separada?
+## 12. ¿Por Qué Existe una Capa HTTP Separada?
 
 Las pantallas no realizan directamente:
 
@@ -1006,13 +1024,13 @@ Las pantallas no realizan directamente:
 fetch(...)
 ```
 
-La responsabilidad se encuentra en:
+La comunicación se encuentra en:
 
 ```text
-productsApi.ts
+src/services/productsApi.ts
 ```
 
-Esto mantiene un flujo claro:
+Esto mantiene un flujo:
 
 ```text
 UI
@@ -1024,40 +1042,38 @@ Service
 API
 ```
 
-La interfaz se concentra en representar información mientras que el servicio se concentra en obtenerla.
-
 ---
 
-## 13. ¿Cómo se manejan los errores HTTP?
+## 13. Manejo de Errores HTTP
 
-La capa de servicios utiliza un error específico:
+El servicio utiliza:
 
 ```text
 ApiError
 ```
 
-que permite conservar información como:
+con información como:
 
 ```text
 message
 status
 ```
 
-De esta forma la aplicación puede diferenciar, por ejemplo:
+Esto permite distinguir:
 
 ```text
 404
 → Product not found
 
-500 / red
+500 / Network
 → Unable to load product
 ```
 
-Esto también permite tomar mejores decisiones sobre reintentos.
+También permite controlar mejor la estrategia de retry.
 
 ---
 
-## 14. ¿Por qué los totales no se almacenan en Zustand?
+## 14. ¿Por Qué No Guardar los Totales en Zustand?
 
 Valores como:
 
@@ -1067,27 +1083,21 @@ total
 totalItems
 ```
 
-pueden calcularse directamente desde los productos y sus cantidades.
+pueden calcularse directamente desde el estado existente.
 
 Por ello se consideran **estado derivado**.
 
-Por ejemplo:
+Ejemplo:
 
 ```text
 subtotal = price * quantity
 ```
 
-y:
-
-```text
-total = reduce(items)
-```
-
-Guardar esos valores adicionalmente en Zustand crearía información duplicada que podría quedar desincronizada.
+Guardar esos valores nuevamente en Zustand podría producir información duplicada y desincronizada.
 
 ---
 
-## 15. ¿Por qué utilizar `replace` después del checkout?
+## 15. ¿Por Qué Utilizar `replace` Después del Checkout?
 
 Después de confirmar el pago se utiliza:
 
@@ -1095,37 +1105,31 @@ Después de confirmar el pago se utiliza:
 router.replace('/success')
 ```
 
-en lugar de simplemente agregar otra pantalla al historial.
-
-El objetivo es evitar que el checkout ya procesado quede como la pantalla inmediatamente anterior.
-
-Esto mejora el comportamiento del flujo posterior a una compra.
+Esto evita mantener el checkout procesado como pantalla inmediatamente anterior.
 
 ---
 
-## 16. ¿Por qué existe `checkoutCompleted`?
+## 16. ¿Por Qué Existe `checkoutCompleted`?
 
-Limitar únicamente el botón visual de regreso no evita que alguien intente acceder directamente a:
+Deshabilitar únicamente el botón Back no impide que alguien intente abrir directamente:
 
 ```text
 /success
 ```
 
-Por ello el store mantiene:
+El estado:
 
 ```text
 checkoutCompleted
 ```
 
-La pantalla de éxito verifica este valor antes de mostrar una compra completada.
-
-Esto mantiene coherencia entre el estado de la aplicación y la información mostrada al usuario.
+permite comprobar si realmente ocurrió un checkout antes de mostrar la confirmación.
 
 ---
 
-## 17. ¿Por qué no se utilizó una arquitectura más compleja?
+## 17. ¿Por Qué No Utilizar una Arquitectura Más Compleja?
 
-No se añadieron capas como:
+No se agregaron capas como:
 
 ```text
 domain/
@@ -1135,24 +1139,27 @@ adapters/
 infrastructure/
 ```
 
-porque el tamaño actual del proyecto no las necesita.
+porque el tamaño actual de la aplicación no las necesita.
 
-Agregar abstracciones únicamente para demostrar patrones habría aumentado la cantidad de código y dificultado la lectura sin resolver un problema real.
+Agregar abstracciones únicamente para demostrar patrones aumentaría la complejidad sin resolver un problema real.
 
-La estructura actual busca seguir esta idea:
+La filosofía utilizada fue:
 
 ```text
-problema real
-→ solución sencilla
-→ responsabilidad clara
-→ código entendible
+Problema real
+↓
+Solución sencilla
+↓
+Código entendible
+↓
+Responsabilidad clara
+↓
+Requisito cumplido
 ```
 
 ---
 
-# Manejo de Estado
-
-La división principal es:
+# Manejo General del Estado
 
 ```text
 SERVER STATE
@@ -1170,13 +1177,11 @@ CLIENT STATE
     └── Checkout Completed
 ```
 
-Esto permite que cada herramienta tenga una responsabilidad concreta.
-
 ---
 
 # Manejo de Errores
 
-El proyecto contempla diferentes situaciones:
+La aplicación contempla:
 
 ```text
 API loading
@@ -1185,7 +1190,7 @@ API loading
 API error
 → mensaje + retry
 
-404 de producto
+404
 → Product not found
 
 Otros errores
@@ -1194,18 +1199,16 @@ Otros errores
 Carrito vacío
 → Empty Cart
 
-Checkout sin productos
+Checkout vacío
 → Checkout unavailable
 
-Acceso inválido a Success
+Success inválido
 → Redirect
 ```
 
 ---
 
 # Navegación
-
-Las principales rutas son:
 
 | Ruta            | Pantalla        |
 | :-------------- | :-------------- |
@@ -1216,46 +1219,21 @@ Las principales rutas son:
 | `/checkout`     | Checkout        |
 | `/success`      | Order Complete  |
 
-Expo Router se encarga de relacionar cada archivo dentro de `app/` con su ruta correspondiente.
-
----
-
-# Git y Control de Versiones
-
-El proyecto utiliza Git y GitHub para mantener un historial incremental de cambios.
-
-La implementación se dividió en commits pequeños relacionados con funcionalidades concretas, por ejemplo:
-
-```text
-chore: initialize Expo TypeScript application
-chore: configure base application navigation
-feat: implement product catalog with API caching
-feat: implement global cart state and quantity controls
-feat: add dynamic product detail screen
-feat: implement cart summary and totals
-feat: implement mock checkout flow
-fix: handle API and navigation edge cases
-refactor: move product catalog to dedicated route
-feat: add welcome screen and catalog navigation
-```
-
-Este enfoque permite entender la evolución del proyecto y revisar cambios funcionales de forma independiente.
-
 ---
 
 # Portabilidad del Proyecto
 
-El repositorio no depende de archivos particulares de IntelliJ IDEA.
+El repositorio no depende de IntelliJ IDEA.
 
-Configuraciones locales como:
+Los archivos locales del IDE:
 
 ```text
 .idea/
 ```
 
-se encuentran ignoradas mediante `.gitignore`.
+se encuentran ignorados mediante `.gitignore`.
 
-También se ignoran:
+También se ignoran archivos generados o locales como:
 
 ```text
 node_modules/
@@ -1265,9 +1243,9 @@ ios/
 android/
 ```
 
-cuando corresponden a archivos generados o específicos del entorno local.
+El repositorio tampoco contiene rutas absolutas hacia la computadora utilizada durante el desarrollo.
 
-Por ello otro desarrollador debería poder trabajar con el proyecto mediante:
+Un desarrollador debería poder ejecutar:
 
 ```bash
 git clone https://github.com/Angel-Lugo97/mini-desk-store.git
@@ -1276,16 +1254,48 @@ npm ci
 npm run start:tunnel
 ```
 
-sin depender del IDE utilizado durante el desarrollo original.
+independientemente del IDE utilizado.
+
+---
+
+# Git y Control de Versiones
+
+El proyecto fue desarrollado mediante commits pequeños asociados a funcionalidades concretas.
+
+Ejemplos:
+
+```text
+chore: initialize Expo TypeScript application
+
+chore: configure base application navigation
+
+feat: implement product catalog with API caching
+
+feat: implement global cart state and quantity controls
+
+feat: add dynamic product detail screen
+
+feat: implement cart summary and totals
+
+feat: implement mock checkout flow
+
+fix: handle API and navigation edge cases
+
+refactor: move product catalog to dedicated route
+
+feat: add welcome screen and catalog navigation
+```
+
+Esto permite entender la evolución del proyecto y revisar cambios de forma independiente.
 
 ---
 
 # Qué se Dejó Fuera
 
-Algunas funcionalidades fueron dejadas fuera intencionalmente porque no eran necesarias para resolver el alcance principal de la prueba.
+Algunas características fueron dejadas fuera intencionalmente porque no eran necesarias para resolver el alcance principal de la prueba.
 
 ```text
-- Autenticación.
+- Login.
 - Registro de usuarios.
 - Backend propio.
 - Base de datos propia.
@@ -1295,23 +1305,21 @@ Algunas funcionalidades fueron dejadas fuera intencionalmente porque no eran nec
 - Filtros.
 - Dark mode.
 - Animaciones avanzadas.
-- Persistencia del carrito con AsyncStorage.
-- Validación runtime con Zod o similar.
+- Persistencia con AsyncStorage.
+- Validación runtime con Zod.
 - CI/CD.
-- Suite completa de tests automatizados.
+- Suite completa de tests.
 ```
 
-Estas características no fueron omitidas por una limitación de la arquitectura actual, sino para mantener el esfuerzo enfocado en los requisitos principales.
+Estas características no eran necesarias para demostrar los requisitos principales de la aplicación.
 
 ---
 
-# ¿Qué Haría con Más Tiempo?
+# Qué Haría con Más Tiempo
 
-## Tests automatizados
+## Tests Automatizados
 
-Añadiría pruebas para las partes con mayor lógica de negocio.
-
-Especialmente:
+Añadiría pruebas principalmente para:
 
 ```text
 - increment
@@ -1319,61 +1327,46 @@ Especialmente:
 - remove
 - clearCart
 - quantity 1 → 0
-- total de unidades
+- totalItems
 - subtotales
 - total general
 - checkoutCompleted
-- estrategia de retry
+- retry
 ```
 
 ---
 
-## Validación runtime
+## Validación Runtime
 
-Actualmente TypeScript describe el contrato esperado de Fake Store API, pero no valida el JSON durante la ejecución.
+TypeScript describe el contrato esperado, pero no valida los datos recibidos durante ejecución.
 
-Con más tiempo agregaría una solución como:
+Con más tiempo incorporaría:
 
 ```text
 Zod
 ```
 
-para validar las respuestas antes de utilizarlas dentro de la aplicación.
+o una alternativa similar.
 
 ---
 
-## Persistencia del carrito
+## Persistencia del Carrito
 
-El carrito actual pertenece a la sesión activa.
+El carrito pertenece actualmente a la sesión activa.
 
-Podría añadirse:
+Podría utilizarse:
 
 ```text
 AsyncStorage
 ```
 
-para conservar los productos aunque la aplicación sea cerrada completamente.
+para mantener los productos después de cerrar completamente la aplicación.
 
 ---
 
-## Mejoras visuales
+## Búsqueda y Filtros
 
-Se podrían incorporar:
-
-```text
-- Skeleton loaders.
-- Animaciones.
-- Mejor feedback visual al agregar productos.
-- Mejor diseño responsive.
-- Estados vacíos más elaborados.
-- Mejoras de accesibilidad.
-```
-
----
-
-## Búsqueda y filtros
-
-Para un catálogo más grande agregaría:
+En un catálogo mayor agregaría:
 
 ```text
 - Búsqueda por nombre.
@@ -1384,15 +1377,24 @@ Para un catálogo más grande agregaría:
 
 ---
 
-## Observabilidad
+## Mejoras Visuales
 
-En una aplicación de producción también sería recomendable incorporar herramientas para registrar errores y comportamiento inesperado.
+Se podrían agregar:
+
+```text
+- Skeleton loaders.
+- Animaciones.
+- Mejor feedback al agregar productos.
+- Mejoras responsive.
+- Accesibilidad.
+- Estados vacíos más elaborados.
+```
 
 ---
 
 ## CI/CD
 
-Podría añadirse una pipeline para ejecutar automáticamente:
+Se podría añadir una pipeline automática para ejecutar:
 
 ```bash
 npx tsc --noEmit
@@ -1405,19 +1407,85 @@ en cada Pull Request o push relevante.
 
 # Limitaciones Actuales
 
-Fake Store API es un servicio externo utilizado únicamente para fines demostrativos.
+Fake Store API es un servicio externo.
 
-La aplicación depende de su disponibilidad para obtener productos.
+La disponibilidad del catálogo depende de que dicho servicio responda correctamente.
 
-El checkout también es completamente simulado y no representa una integración financiera real.
+El checkout es únicamente demostrativo y no representa una integración financiera real.
 
-El carrito no se persiste después de cerrar completamente la aplicación.
+El carrito tampoco se persiste al cerrar completamente la aplicación.
 
 ---
 
-# Flujo Principal para Validación
+# Evidencia Visual de Ejecución
 
-Un flujo recomendado para comprobar el funcionamiento de la prueba es:
+Las siguientes capturas muestran Mini Desk Store ejecutándose en un dispositivo físico mediante **Expo Go**.
+
+---
+
+## Welcome y Catálogo
+
+|                                         Pantalla de bienvenida                                        |                                         Catálogo                                        |
+| :---------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: |
+| <img src="docs/screenshots/welcome.jpeg" alt="Pantalla de bienvenida de Mini Desk Store" width="320"> | <img src="docs/screenshots/catalog.jpeg" alt="Catálogo de Mini Desk Store" width="320"> |
+|                                Pantalla inicial con acceso al catálogo.                               |                        Productos obtenidos desde Fake Store API.                        |
+
+---
+
+## Estado Global del Carrito
+
+<p align="center">
+  <img src="docs/screenshots/catalog-quantities.jpeg" alt="Cantidades sincronizadas y contador global del carrito" width="320">
+</p>
+
+<p align="center">
+Las cantidades de los productos y el indicador del carrito permanecen sincronizados mediante Zustand.
+</p>
+
+---
+
+## Carrito y Checkout
+
+|                                       Shopping Cart                                       |                                         Checkout                                         |
+| :---------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: |
+| <img src="docs/screenshots/cart.jpeg" alt="Shopping Cart de Mini Desk Store" width="320"> | <img src="docs/screenshots/checkout.jpeg" alt="Checkout de Mini Desk Store" width="320"> |
+|           El carrito muestra cantidades, subtotales, controles y total general.           |           El checkout presenta un resumen antes de confirmar el pago simulado.           |
+
+---
+
+## Confirmación de Compra
+
+<p align="center">
+  <img src="docs/screenshots/success.jpeg" alt="Pantalla de compra completada" width="320">
+</p>
+
+<p align="center">
+Después de confirmar el checkout, el carrito se limpia y se muestra la pantalla de operación completada.
+</p>
+
+---
+
+## Ejecución desde IntelliJ IDEA
+
+El proyecto puede iniciarse directamente desde IntelliJ IDEA utilizando una configuración de ejecución asociada al script npm:
+
+```bash
+npm run start:tunnel
+```
+
+<p align="center">
+  <img src="docs/screenshots/intellij-run.png" alt="Mini Desk Store ejecutándose desde IntelliJ IDEA" width="850">
+</p>
+
+La configuración del IDE es únicamente una comodidad de desarrollo.
+
+El proyecto continúa siendo independiente de IntelliJ IDEA y puede ejecutarse desde cualquier entorno compatible con Node.js y Expo.
+
+---
+
+# Flujo Principal de Validación
+
+Para comprobar el funcionamiento general:
 
 ```text
 1. Abrir la aplicación.
@@ -1425,10 +1493,10 @@ Un flujo recomendado para comprobar el funcionamiento de la prueba es:
 3. Entrar al Catalog.
 4. Esperar la carga de productos.
 5. Abrir un Product Detail.
-6. Aumentar su cantidad.
+6. Aumentar la cantidad.
 7. Verificar el Cart Indicator.
 8. Abrir Cart.
-9. Verificar subtotal y total.
+9. Verificar subtotales y total.
 10. Proceed to Checkout.
 11. Confirm Payment.
 12. Visualizar Success.
@@ -1436,19 +1504,17 @@ Un flujo recomendado para comprobar el funcionamiento de la prueba es:
 14. Verificar que el carrito está vacío.
 ```
 
-También puede comprobarse directamente una ruta dinámica:
+También puede verificarse directamente:
 
 ```text
 /product/:id
 ```
 
-para validar que el detalle no depende de haber visitado anteriormente el listado.
+para comprobar que el detalle no depende de visitar previamente el catálogo.
 
 ---
 
 # Principios Seguidos Durante el Desarrollo
-
-El proyecto mantiene una filosofía sencilla:
 
 ```text
 Problema real
@@ -1462,7 +1528,7 @@ Responsabilidad clara
 Requisito cumplido
 ```
 
-El objetivo principal fue construir una solución funcional y fácil de mantener sin introducir complejidad que el tamaño de la aplicación todavía no requiere.
+La intención principal fue construir una solución funcional, explicable y fácil de mantener sin agregar complejidad innecesaria.
 
 ---
 
@@ -1470,11 +1536,13 @@ El objetivo principal fue construir una solución funcional y fácil de mantener
 
 Mini Desk Store implementa un flujo completo de tienda móvil utilizando React Native, Expo y TypeScript.
 
-La aplicación separa los datos remotos y el estado del cliente utilizando TanStack Query y Zustand respectivamente, utiliza Expo Router para navegación y rutas dinámicas, y mantiene una capa HTTP independiente basada en `fetch`.
+La aplicación separa los datos remotos y el estado del cliente utilizando **TanStack Query** y **Zustand**, respectivamente.
 
-Las decisiones técnicas se orientaron a mantener una solución pequeña, legible y proporcional al problema, evitando duplicación de estado y abstracciones innecesarias.
+Expo Router gestiona la navegación y las rutas dinámicas, mientras que la comunicación con Fake Store API se mantiene separada dentro de una capa HTTP basada en `fetch`.
 
-El resultado es una aplicación que cubre el flujo principal:
+Las decisiones técnicas se orientaron a mantener una solución pequeña, legible y proporcional al problema.
+
+El flujo principal implementado es:
 
 ```text
 Welcome
@@ -1485,4 +1553,22 @@ Welcome
 → Success
 ```
 
-manteniendo además manejo de estados remotos, caché, reintentos, rutas dinámicas, sincronización global del carrito y protección del flujo de checkout.
+Además, el proyecto incluye:
+
+```text
+- Loading.
+- Error.
+- Success.
+- Caché.
+- Retry.
+- Rutas dinámicas.
+- Acceso directo al detalle.
+- Estado global sincronizado.
+- Totales derivados.
+- Checkout simulado.
+- Protección de navegación.
+- Evidencia visual.
+- Portabilidad entre diferentes IDEs.
+```
+
+El resultado es una aplicación funcional que cumple el flujo principal solicitado manteniendo una arquitectura sencilla y fácil de explicar.
