@@ -21,12 +21,12 @@ export default function SuccessScreen() {
   );
 
   if (!checkoutCompleted) {
-    return <Redirect href="/" />;
+    return <Redirect href="/catalog" />;
   }
 
   const handleContinueShopping = () => {
     resetCheckout();
-    router.dismissTo('/');
+    router.dismissTo('/catalog');
   };
 
   return (
