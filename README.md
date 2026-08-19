@@ -10,18 +10,20 @@ El proyecto fue desarrollado con una arquitectura deliberadamente sencilla, prio
 
 ## Presentación del Proyecto
 
-| Campo            | Información           |
-| :--------------- | :-------------------- |
-| **Proyecto**     | Mini Desk Store       |
-| **Tipo**         | Prueba técnica mobile |
-| **Plataforma**   | React Native          |
-| **Framework**    | Expo                  |
-| **Lenguaje**     | TypeScript            |
-| **Navegación**   | Expo Router           |
-| **Server State** | TanStack Query        |
-| **Client State** | Zustand               |
-| **API**          | Fake Store API        |
-| **Estado**       | Funcional             |
+| Campo                          | Información                       |
+| :----------------------------- | :-------------------------------- |
+| **Nombre**                     | Angel Abraham Lugo Saenz          |
+| **Institución de procedencia** | Instituto Tecnológico de Software |
+| **Proyecto**                   | Mini Desk Store                   |
+| **Tipo**                       | Prueba técnica mobile             |
+| **Plataforma**                 | React Native                      |
+| **Framework**                  | Expo                              |
+| **Lenguaje**                   | TypeScript                        |
+| **Navegación**                 | Expo Router                       |
+| **Server State**               | TanStack Query                    |
+| **Client State**               | Zustand                           |
+| **API**                        | Fake Store API                    |
+| **Estado**                     | Funcional                         |
 
 ---
 
